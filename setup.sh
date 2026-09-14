@@ -16,11 +16,11 @@ warn() { printf '\033[1;33m!!\033[0m %s\n' "$1" >&2; }
 # DayOfWeekRow, Slider and TextField.
 # ttf-jetbrains-mono-nerd must be Nerd Fonts v3 — every icon in the bar is an
 # nf-md-* glyph (U+F0000-U+F1AF0). Plain ttf-jetbrains-mono renders pure tofu.
-# base-devel/cmake/meson/ninja are for hyprpm compiling Hyprspace below, not
-# for the config itself.
+# base-devel/cmake/cpio/glaze/hyprland-protocols are hyprland's optional deps
+# for hyprpm compiling Hyprspace below, not requirements of the config itself.
 say "Installing packages"
 sudo pacman -S --needed --noconfirm \
-	hyprland hyprpaper hypridle hyprlock hyprshot hyprland-qtutils \
+	hyprland hyprpaper hypridle hyprlock hyprshot \
 	quickshell qt6-base qt6-declarative qt6-wayland qt6-svg \
 	kitty nautilus \
 	brightnessctl playerctl \
@@ -28,7 +28,7 @@ sudo pacman -S --needed --noconfirm \
 	networkmanager bluez bluez-utils upower power-profiles-daemon polkit \
 	xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
 	ttf-jetbrains-mono-nerd noto-fonts noto-fonts-emoji hicolor-icon-theme \
-	stow git base-devel cmake meson ninja
+	stow git base-devel cmake cpio glaze hyprland-protocols
 
 # ------------------------------------------------- notification bus owner
 # Services.qml runs the notification server itself, and only one process can
