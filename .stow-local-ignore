@@ -1,0 +1,15 @@
+# Ignore git files
+.git
+.gitignore
+
+# Ignore documentation
+README.md
+
+# Ignore termpoary and backup files
+*.bak
+*.swp
+*~
+
+# Ignore stow files
+.stow-local-ignore
+
