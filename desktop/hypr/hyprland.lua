@@ -240,7 +240,8 @@ hl.config({
 	--############
 	-- https://wiki.hyprland.org/Configuring/Variables/#input
 	input = {
-		kb_layout = "us(altgr-intl)",
+		-- second entry is toggled into by SUPER + SHIFT + space, see keybindings.lua
+		kb_layout = "us(altgr-intl),de",
 		kb_variant = "",
 		kb_model = "",
 		kb_options = "",

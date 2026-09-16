@@ -47,11 +47,25 @@ Singleton {
         bodyMarkupSupported: false
         imageSupported: true
         onNotification: n => {
+            root.notifTimes[n.id] = new Date();
             n.tracked = true;
             // dismissing from the panel must also take down its toast
-            n.closed.connect(() => root.dropPopup(n));
+            n.closed.connect(() => {
+                delete root.notifTimes[n.id];
+                root.dropPopup(n);
+            });
             root.popups = [n, ...root.popups].slice(0, 5);
         }
+    }
+
+    // Arrival times, by notification id: the server doesn't keep one.
+    // ponytail: plain object, no change signal — the delegate reads it once at
+    // creation, which is all a fixed clock time needs.
+    property var notifTimes: ({})
+    // empty for anything restored across a reload, whose arrival we never saw
+    function notifTime(n) {
+        const t = notifTimes[n.id];
+        return t ? Qt.formatDateTime(t, "HH:mm") : "";
     }
 
     // Everything still in the tray, shown by the panel's notification tab

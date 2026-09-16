@@ -110,7 +110,7 @@ PanelWindow {
             x: 20
             width: box.fullW - 40
             height: 64
-            opacity: Math.max(0, root.morph * 2 - 1)
+            opacity: Math.min(1, root.morph * 1.5)
             verticalAlignment: TextInput.AlignVCenter
             focus: true
             color: Theme.fg
@@ -140,7 +140,7 @@ PanelWindow {
             id: list
             y: 64
             width: box.fullW
-            opacity: Math.max(0, root.morph * 2 - 1)
+            opacity: Math.min(1, root.morph * 1.5)
             // grows with the list, then scrolls — always a whole number of rows
             height: Math.min(contentHeight, parent.rowHeight * 8)
             clip: true

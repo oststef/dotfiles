@@ -87,7 +87,7 @@ PopupWindow {
             y: 16
             width: panel.width - 32
             height: implicitHeight
-            opacity: Math.max(0, panel.morph * 2 - 1)
+            opacity: Math.min(1, panel.morph * 1.5)
             spacing: 14
 
             // Tab bar
@@ -376,7 +376,7 @@ PopupWindow {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 visible: text !== ""
-                                text: modelData.appName
+                                text: [modelData.appName, Services.notifTime(modelData)].filter(s => s).join("  ·  ")
                                 color: Theme.muted
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSize - 4
@@ -1200,7 +1200,23 @@ PopupWindow {
                     }
                     Process {
                         id: setBrightness
-                        onExited: readBrightness.running = true
+                    }
+                    function apply() {
+                        setBrightness.running = false;
+                        setBrightness.command = ["brightnessctl", "set", Math.round(backlight.pct * 100) + "%"];
+                        setBrightness.running = true;
+                    }
+                    // A drag emits onMoved per mouse move; one brightnessctl per
+                    // sample is ~60 fork+execs a second and the slider goes sticky.
+                    Timer {
+                        interval: 50
+                        repeat: true
+                        running: brightness.pressed
+                        triggeredOnStart: true
+                        onTriggered: backlight.apply()
+                        // and once more on release, so the final value always lands
+                        onRunningChanged: if (!running)
+                            backlight.apply()
                     }
                     // re-read whenever the panel opens; the hardware keys change
                     // it behind our back
@@ -1241,11 +1257,7 @@ PopupWindow {
                             from: 0.01
                             to: 1
                             value: backlight.pct
-                            onMoved: {
-                                backlight.pct = value;
-                                setBrightness.command = ["brightnessctl", "set", Math.round(value * 100) + "%"];
-                                setBrightness.running = true;
-                            }
+                            onMoved: backlight.pct = value
                             background: Rectangle {
                                 anchors.fill: parent
                                 radius: height / 2

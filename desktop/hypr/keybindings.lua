@@ -1,6 +1,5 @@
--- hyprsplit is loaded by monitors/desktop.lua and nowhere else, so this is nil
--- on the laptop. There, plain hl.dsp gives Hyprland's global workspaces, which
--- survive a monitor being unplugged; see monitors/laptop.lua for why.
+-- hyprsplit is loaded by every monitors/*.lua, so this is normally set; the
+-- hl.dsp fallback is Hyprland's global workspaces, for a host without it.
 local hs = package.loaded["hyprsplit"]
 local ws = hs and hs.dsp or hl.dsp
 
@@ -13,6 +12,8 @@ hl.bind(mainMod .. " + M", hl.dsp.exit())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + space", hl.dsp.global("quickshell:launcher"))
+-- no switchxkblayout dispatcher in the lua API, so go through hyprctl
+hl.bind(SUPER_SHIFT .. " + space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next"))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + T", hl.dsp.layout("togglesplit"))
 -- only meaningful with per-monitor blocks, i.e. only on the desktop
@@ -29,12 +30,31 @@ end, { description = "Toggle overview on all monitors" })
 
 hl.bind("PRINT", hl.dsp.exec_cmd("hyprshot -m window"))
 hl.bind("SHIFT + PRINT", hl.dsp.exec_cmd("hyprshot -m region"))
-hl.bind(SUPER_SHIFT .. " + l", hl.dsp.exec_cmd("hyprlock"))
+hl.bind(SUPER_SHIFT .. " + X", hl.dsp.exec_cmd("hyprlock"))
 
 hl.bind(mainMod .. " + h", hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + l", hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + j", hl.dsp.focus({ direction = "up" }))
 hl.bind(mainMod .. " + k", hl.dsp.focus({ direction = "down" }))
+
+hl.bind(SUPER_SHIFT .. " + h", hl.dsp.window.swap({ direction = "left" }))
+hl.bind(SUPER_SHIFT .. " + l", hl.dsp.window.swap({ direction = "right" }))
+hl.bind(SUPER_SHIFT .. " + j", hl.dsp.window.swap({ direction = "up" }))
+hl.bind(SUPER_SHIFT .. " + k", hl.dsp.window.swap({ direction = "down" }))
+
+local RESIZE_STEP = 40
+hl.define_submap("resize", function()
+	for key, delta in pairs({
+		h = { x = -RESIZE_STEP, y = 0 },
+		l = { x = RESIZE_STEP, y = 0 },
+		j = { x = 0, y = -RESIZE_STEP },
+		k = { x = 0, y = RESIZE_STEP },
+	}) do
+		hl.bind(key, hl.dsp.window.resize({ x = delta.x, y = delta.y, relative = true }), { repeating = true })
+	end
+	hl.bind("escape", hl.dsp.submap("reset"))
+end)
+hl.bind(mainMod .. " + R", hl.dsp.submap("resize"))
 
 hl.bind(mainMod .. " + ALT + h", ws.focus({ workspace = "-1" }))
 hl.bind(mainMod .. " + ALT + l", ws.focus({ workspace = "+1" }))

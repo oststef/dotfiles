@@ -1,11 +1,14 @@
 -- Notebook: internal panel plus whatever gets plugged in.
 -- The empty-output rule is the catch-all so an unknown external is configured
 -- rather than falling through to Hyprland's implicit default.
+-- 1.5 instead of "auto" (which picks 2 on the 2880x1800 panel, only 1440x900
+-- of usable space). 2880/1.5 and 1800/1.5 are both whole, so Hyprland won't
+-- reject it; 1.6 (1800x1125) is the next step down if 1920x1200 still crowds.
 hl.monitor({
 	output = "eDP-1",
 	mode = "preferred",
 	position = "auto",
-	scale = "auto",
+	scale = "1.5",
 })
 
 -- "auto" places externals to the right but top-aligned, so a 1440-tall
@@ -20,13 +23,20 @@ hl.monitor({
 	scale = "1",
 })
 
--- Deliberately no hyprsplit here. Its per-monitor workspace blocks give the
--- external its own 11-20, and when you undock, those workspaces stay alive on
--- the internal panel but SUPER+1..0 (which only address the local block, 1-10)
--- can no longer reach them. Its monitor.added/config.reloaded handlers impose
--- the blocks whether or not its dispatchers are used, so the module has to stay
--- unloaded, not merely unused. Plain Hyprland workspaces are global: a
--- workspace follows you between screens and nothing can be stranded.
+-- Per-monitor workspace blocks, same as the desktop: eDP-1 owns 1-10, a docked
+-- external gets 11-20, so SUPER+1..0 never drags a workspace off the other
+-- screen. The priority list is what pins the internal panel to 1-10; unlisted
+-- monitors are auto-assigned after it, so any external lands on 11-20.
+local hs = require("hyprsplit")
+hs.config({ num_workspaces = 10 })
+hs.monitor_priority({ "eDP-1" })
+
+-- Undocking strands windows on 11-20, which SUPER+1..0 can no longer reach.
+-- grab_rogue_windows pulls them back onto the active workspace.
+-- ponytail: fires blind; if the leaving monitor is still in hl.get_monitors()
+-- at this point its block still counts as valid and this is a no-op. SUPER+G
+-- runs the same thing by hand.
+hl.on("monitor.removed", hs.dsp.grab_rogue_windows())
 
 -- Lid. logind already suspends on a bare lid close and ignores a docked one
 -- (HandleLidSwitchDocked defaults to ignore), but nothing turns the internal
