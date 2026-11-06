@@ -289,7 +289,11 @@ hl.config({
 -- module, so plugin:hyprsplit:num_workspaces doesn't exist), so its "fill in
 -- empty workspaces" range falls back to 1..highest-id-on-monitor and floods the
 -- monitors holding blocks 11-20 / 21-30. Just don't show empty workspaces.
-hl.config({ plugin = { overview = { showEmptyWorkspace = false } } })
+-- Guarded because Hyprspace is loaded by `hyprpm reload` after the first parse,
+-- so the key doesn't exist yet; the reload triggered by the plugin load applies it.
+if hl.plugin.overview then
+	hl.config({ plugin = { overview = { showEmptyWorkspace = false } } })
+end
 
 hl.on("hyprland.start", function()
 	hl.exec_cmd("hyprpaper")
