@@ -524,6 +524,52 @@ PopupWindow {
                     }
                 }
 
+                // Keyboard layout: an index into hyprland.lua's kb_layout. Any
+                // switch (SUPER+SHIFT+space too) fires activelayout; re-reading
+                // the index beats mapping keymap names back to it.
+                RowLayout {
+                    id: kb
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    property int layout: 0
+
+                    Process {
+                        id: readLayout
+                        command: ["hyprctl", "devices", "-j"]
+                        stdout: StdioCollector {
+                            onStreamFinished: kb.layout = JSON.parse(text).keyboards.find(k => k.main)?.active_layout_index ?? 0
+                        }
+                    }
+                    Connections {
+                        target: Hyprland
+                        function onRawEvent(event) {
+                            if (event.name === "activelayout")
+                                readLayout.running = true;
+                        }
+                    }
+                    Component.onCompleted: readLayout.running = true
+
+                    Repeater {
+                        // same order as kb_layout = "us(altgr-intl),de"
+                        model: ["󰌌  us intl", "󰌌  de"]
+                        Pill {
+                            required property string modelData
+                            required property int index
+                            Layout.fillWidth: true
+                            implicitHeight: 34
+                            padding: 6
+                            text: modelData
+                            textColor: kb.layout === index ? Theme.bg : Theme.muted
+                            color: kb.layout === index ? Theme.accent : Theme.bg
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: Quickshell.execDetached(["hyprctl", "switchxkblayout", "all", String(parent.index)])
+                            }
+                        }
+                    }
+                }
+
                 // Network: tap the header to expand into a picker.
                 Rectangle {
                     id: netCard
