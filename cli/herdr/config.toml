@@ -1,0 +1,52 @@
+onboarding = false
+
+[theme]
+name = "catppuccin"
+
+[keys]
+prefix = "ctrl+space"
+
+# tmux: bind -n M-H / M-L previous/next window
+previous_tab = "alt+shift+h"
+next_tab = "alt+shift+l"
+
+# tmux: prefix " (stacked) and prefix % (side by side)
+split_horizontal = "prefix+quote"
+split_vertical = "prefix+percent"
+
+[ui]
+tab_bar_position = "bottom"
+tab_bar_right = [
+  { type = "command", command = "~/.config/herdr/claude-usage.sh", interval_seconds = 30, timeout_seconds = 2 },
+  { type = "command", command = "kubectl config current-context", interval_seconds = 5, timeout_seconds = 2 },
+]
+
+# herdr-metrics plugin tokens; account limits live in the tab bar (claude-usage.sh)
+[ui.sidebar.agents]
+row_gap = 0
+rows = [
+  ["state_icon", { token = "workspace", bold = true }],
+  ["agent", "$usage"],
+  ["$context"],
+]
+
+# tmux: vim-tmux-navigator (ctrl+h/j/k/l moves between panes and nvim splits)
+[[keys.command]]
+key = "ctrl+h"
+type = "shell"
+command = "~/.config/herdr/navigate.sh left ctrl+h"
+
+[[keys.command]]
+key = "ctrl+j"
+type = "shell"
+command = "~/.config/herdr/navigate.sh down ctrl+j"
+
+[[keys.command]]
+key = "ctrl+k"
+type = "shell"
+command = "~/.config/herdr/navigate.sh up ctrl+k"
+
+[[keys.command]]
+key = "ctrl+l"
+type = "shell"
+command = "~/.config/herdr/navigate.sh right ctrl+l"
