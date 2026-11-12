@@ -35,7 +35,7 @@ function inLayout() {
   const find = (n) => n && (n.id === BLOCK && n.content?.mod === "over9k-usage" ? n : (n.children ?? []).map(find).find(Boolean));
   return Boolean(find(layout()));
 }
-const ROW = 28, LIMIT = 26, BAR = 10, TABS = 26, GRAPH = 72;
+const ROW = 28, LIMIT = 26, RESET = 14, BAR = 10, TABS = 26, GRAPH = 72;
 
 // herdr's bundled program icons: Claude's and Codex's carry their own colors, Gemini's is a glyph to tint.
 const ICONS = { claude: { path: "icons/claude.svg" }, codex: { path: "icons/codex.svg" }, gemini: { path: "icons/gemini.svg", tint: true } };
@@ -215,7 +215,7 @@ export default class Usage extends View {
   // The block's height: every row, plus the open ones' limits.
   fit() {
     if (!inLayout()) return;
-    const h = this.services.length ? 6 + this.services.reduce((n, s) => n + ROW + (this.open.has(s.key) ? (s.days ? TABS + GRAPH + Math.max(1, spendIn(s.days, this.period(s).days).models.length) * LIMIT : Math.max(1, s.limits?.length ?? 0) * LIMIT) + 4 : 0), 0) : 0;
+    const h = this.services.length ? 6 + this.services.reduce((n, s) => n + ROW + (this.open.has(s.key) ? (s.days ? TABS + GRAPH + Math.max(1, spendIn(s.days, this.period(s).days).models.length) * LIMIT : Math.max(1, s.limits?.length ?? 0) * (LIMIT + RESET)) + 4 : 0), 0) : 0;
     if (h !== this.height) { this.height = h; run("layout.resize", { id: BLOCK, px: h }); }
   }
 
@@ -365,15 +365,17 @@ export default class Usage extends View {
               .child(div().flex_1().min_w(0).truncate().text_color(t.muted).child(x.name))
               .child(div().flex_none().text_color(t.foreground).child(money(x.cost)))))))
           .when(open && Boolean(s.limits), (el) => el.child(v_flex().px(4).pb(4).children([...s.limits].sort((a, b) => (b.label === this.picked[s.key]) - (a.label === this.picked[s.key])).map((l) =>
-            h_flex().id(`limit-${s.key}-${l.label}`).h(LIMIT).items_center().gap(7).text_size(11.5).rounded(4).cursor_pointer()
+            v_flex().id(`limit-${s.key}-${l.label}`).h(LIMIT + RESET).justify_center().text_size(11.5).rounded(4).cursor_pointer()
               .hover((x) => x.bg(t.hover))
               .on_click((_e, cx) => this.pickHeadline(s.key, l.label, cx))
               .tooltip(l.label === this.picked[s.key] ? "Unpin as headline number" : "Pin as headline number")
-              .child(div().w(82).flex_none().truncate().text_color(l.label === this.picked[s.key] ? t.accent : t.muted).child(l.label))
-              .child(div().flex_1().h(BAR).rounded(BAR / 2).bg(t.raised)
-                .child(div().h(BAR).rounded(BAR / 2).bg(this.color(t, l.used)).w(`${Math.max(l.used > 0 ? 3 : 0, l.used)}%`)))
-              .child(div().w(30).flex_none().flex().justify_end().text_color(this.color(t, l.used)).child(`${Math.round(l.used)}%`))
-              .child(div().w(44).flex_none().flex().justify_end().text_size(10.5).text_color(t.dim).child(l.left != null ? left(l.left) : ""))))));
+              .child(h_flex().items_center().gap(7)
+                .child(div().w(82).flex_none().truncate().text_color(l.label === this.picked[s.key] ? t.accent : t.muted).child(l.label))
+                .child(div().flex_1().h(BAR).rounded(BAR / 2).bg(t.raised)
+                  .child(div().h(BAR).rounded(BAR / 2).bg(this.color(t, l.used)).w(`${Math.max(l.used > 0 ? 3 : 0, l.used)}%`)))
+                .child(div().w(30).flex_none().flex().justify_end().text_color(this.color(t, l.used)).child(`${Math.round(l.used)}%`)))
+              // Indented by the label's width plus the gap, so it sits under the bar.
+              .when(l.left != null, (el) => el.child(div().pl(89).truncate().text_size(10.5).text_color(t.dim).child(`Resets in ${left(l.left)}`)))))));
       }));
   }
 }
