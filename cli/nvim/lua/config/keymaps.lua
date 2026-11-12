@@ -5,15 +5,21 @@
 local map = vim.keymap.set
 
 -- Inside herdr there is no $TMUX, so at the edge of nvim hand off to herdr instead.
+-- herdr TUI sets HERDR_PANE_ID; the herdr desktop app's terminals set HC_TERMINAL_ID.
 local function navigate(wincmd, direction, tmux_cmd)
-  if not vim.env.HERDR_PANE_ID then
+  local handoff
+  if vim.env.HERDR_PANE_ID then
+    handoff = { "herdr", "pane", "focus", "--pane", vim.env.HERDR_PANE_ID, "--direction", direction }
+  elseif vim.env.HC_TERMINAL_ID then
+    handoff = { "herdr-app", "do", "pane.go", "--direction", direction }
+  else
     return "<cmd> " .. tmux_cmd .. "<CR>"
   end
   return function()
     local win = vim.api.nvim_get_current_win()
     vim.cmd.wincmd(wincmd)
     if vim.api.nvim_get_current_win() == win then
-      vim.system({ "herdr", "pane", "focus", "--pane", vim.env.HERDR_PANE_ID, "--direction", direction })
+      vim.system(handoff)
     end
   end
 end
