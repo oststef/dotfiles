@@ -1,0 +1,10 @@
+{
+  "zoom": 1.0,
+  "sounds": {
+    "enabled": true
+  },
+  "font_ligatures": false,
+  "ui_font": "JetBrains Mono",
+  "minimum_contrast": 1.0,
+  "theme": "catppuccin"
+}
